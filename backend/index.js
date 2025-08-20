@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const pool = require('./config/db');
-const path = require('path');
+const pool = require('./config/db'); // Corretto: il percorso del file
 const dotenv = require('dotenv');
+
+// Importiamo i router
+const authRoutes = require('./routes/auth');
+const postsRoutes = require('./routes/posts');
 
 // Configurazione di dotenv per caricare le variabili d'ambiente
 dotenv.config();
@@ -15,22 +18,20 @@ app.use(cors());
 app.use(express.json());
 
 // Verifica della connessione al database
-// Inseriamo questa logica in un blocco try-catch per gestire gli errori
 (async () => {
     try {
         const connection = await pool.getConnection();
         console.log('🎉 Connesso al database MySQL con successo!');
-        connection.release(); // Rilascia la connessione dopo il test
+        connection.release();
     } catch (err) {
         console.error('❌ Errore di connessione al database:', err.message);
-        process.exit(1); // Uscita forzata in caso di errore critico
+        process.exit(1);
     }
 })();
 
-// Endpoint di test
-app.get('/', (req, res) => {
-    res.send('Server del Travel Journal App in funzione!');
-});
+// Definizione delle route API
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postsRoutes);
 
 // Avvio del server
 app.listen(PORT, () => {
