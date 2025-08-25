@@ -32,7 +32,7 @@ const register = async (req, res) => {
             [username, email, hashedPassword]
         );
 
-        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '2d' });
 
         // Opzioni per l'email di conferma
         const mailOptions = {
