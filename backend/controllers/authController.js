@@ -1,34 +1,56 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
+
+// Configurazione di Nodemailer con i dati del file .env
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 const register = async (req, res) => {
     const { username, email, password } = req.body;
 
-    // Validazione di base
     if (!username || !email || !password) {
         return res.status(400).json({ msg: 'Inserisci tutti i campi' });
     }
 
     try {
-        // Generazione del sale e hashing della password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Inserimento dell'utente nel database
         const [result] = await pool.execute(
             'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
             [username, email, hashedPassword]
         );
 
-        // Creazione del token JWT
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(201).json({ token, msg: 'Utente registrato con successo!' });
+        // Opzioni per l'email di conferma
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Conferma Registrazione al Travel Journal App',
+            text: `Benvenuto, ${username}! La tua registrazione è andata a buon fine. Inizia il tuo viaggio!`,
+            html: `<p>Ciao <strong>${username}</strong>,</p><p>La tua registrazione al <strong>Travel Journal App</strong> è andata a buon fine. Preparati a raccontare le tue avventure!</p>`,
+        };
+
+        // Invio dell'email
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log(error);
+            }
+            console.log('Email inviata: ' + info.response);
+        });
+
+        res.status(201).json({ token, msg: 'Utente registrato con successo! Controlla la tua email per la conferma.' });
     } catch (err) {
         console.error('Errore di registrazione:', err);
-        // Gestione dell'errore per username o email duplicati
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({ msg: 'Username o email già esistenti' });
         }
@@ -39,30 +61,24 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
 
-    // Validazione di base
     if (!email || !password) {
         return res.status(400).json({ msg: 'Inserisci email e password' });
     }
 
     try {
-        // Ricerca dell'utente tramite email
         const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
         const user = rows[0];
 
-        // Se l'utente non esiste
         if (!user) {
             return res.status(400).json({ msg: 'Credenziali non valide' });
         }
 
-        // Confronto della password
         const isMatch = await bcrypt.compare(password, user.password);
 
-        // Se la password non corrisponde
         if (!isMatch) {
             return res.status(400).json({ msg: 'Credenziali non valide' });
         }
 
-        // Creazione del token JWT
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ token, msg: 'Login effettuato con successo!' });
