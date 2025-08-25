@@ -4,12 +4,15 @@ const pool = require('../config/db');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Configurazione di Nodemailer con i dati del file .env
+// Configurazione di Nodemailer con TLS compatibile Windows/macOS
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+        rejectUnauthorized: false, // permette invio anche con certificati autofirmati
     },
 });
 
@@ -40,12 +43,13 @@ const register = async (req, res) => {
             html: `<p>Ciao <strong>${username}</strong>,</p><p>La tua registrazione al <strong>Travel Journal App</strong> è andata a buon fine. Preparati a raccontare le tue avventure!</p>`,
         };
 
-        // Invio dell'email
+        // Invio dell'email con gestione errori
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                return console.log(error);
+                console.error('❌ Errore invio email:', error.message);
+            } else {
+                console.log('✅ Email inviata:', info.response);
             }
-            console.log('Email inviata: ' + info.response);
         });
 
         res.status(201).json({ token, msg: 'Utente registrato con successo! Controlla la tua email per la conferma.' });
