@@ -9,10 +9,10 @@ import DefaultLayout from './layout/DefaultLayout';
 
 // Componente per le rotte protette
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, initialLoading } = useAuth();
 
-  if (loading) {
-    return <div>Caricamento...</div>; // O un loader più elegante
+  if (initialLoading) {
+    return <div>Caricamento...</div>;
   }
 
   if (!user) {
@@ -24,10 +24,10 @@ const ProtectedRoute = ({ children }) => {
 
 // Componente per le rotte pubbliche
 const PublicRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, initialLoading } = useAuth();
 
-  if (loading) {
-    return <div>Caricamento...</div>; // O un loader più elegante
+  if (initialLoading) {
+    return <div>Caricamento...</div>;
   }
 
   if (user) {
