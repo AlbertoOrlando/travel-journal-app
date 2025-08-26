@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const LoginPage = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+const RegisterPage = () => {
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: '',
+    });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { register } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -21,12 +25,12 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            const result = await login(formData);
+            const result = await register(formData);
 
             if (result.success) {
                 navigate('/dashboard');
             } else {
-                setError(result.msg || 'Email o password non validi.');
+                setError(result.msg || 'Errore di registrazione. Riprova.');
             }
         } catch (err) {
             setError(err.message || 'Errore imprevisto. Riprova.');
@@ -38,8 +42,24 @@ const LoginPage = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Accedi</h2>
-                <form onSubmit={handleSubmit} autoComplete="on">
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Registrati</h2>
+                <form onSubmit={handleSubmit} autoComplete="off">
+                    <div className="mb-4">
+                        <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
+                            Username
+                        </label>
+                        <input
+                            id="username"
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Username"
+                            autoComplete="username"
+                            required
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        />
+                    </div>
                     <div className="mb-4">
                         <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
                             Email
@@ -67,7 +87,7 @@ const LoginPage = () => {
                             value={formData.password}
                             onChange={handleChange}
                             placeholder="Password"
-                            autoComplete="current-password"
+                            autoComplete="new-password"
                             required
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         />
@@ -84,16 +104,16 @@ const LoginPage = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                            className={`bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
                                 }`}
                         >
-                            {loading ? 'Accesso in corso...' : 'Accedi'}
+                            {loading ? 'Registrazione in corso...' : 'Registrati'}
                         </button>
                         <Link
-                            to="/register"
+                            to="/login"
                             className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                         >
-                            Non hai un account? Registrati
+                            Hai già un account? Accedi
                         </Link>
                     </div>
                 </form>
@@ -102,4 +122,4 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default RegisterPage;
