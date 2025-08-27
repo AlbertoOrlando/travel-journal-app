@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
 const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
+    // Stato iniziale stabile: evita reset involontari durante la digitazione
     const [formData, setFormData] = useState({
         title: initialData.title || '',
         content: initialData.content || '',
     });
 
+    // Aggiorna lo stato solo se initialData cambia realmente
     useEffect(() => {
-        setFormData({
-            title: initialData.title || '',
-            content: initialData.content || '',
-        });
+        if (initialData && (initialData.title || initialData.content)) {
+            setFormData({
+                title: initialData.title || '',
+                content: initialData.content || '',
+            });
+        }
     }, [initialData]);
 
     const handleChange = (e) => {
@@ -25,6 +29,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
 
     return (
         <form onSubmit={handleSubmit}>
+            {/* Titolo */}
             <div className="mb-4">
                 <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
                     Titolo
@@ -40,6 +45,8 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
             </div>
+
+            {/* Contenuto */}
             <div className="mb-6">
                 <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">
                     Contenuto
@@ -55,11 +62,18 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
                 />
             </div>
+
+            {/* Messaggio di errore */}
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm" role="alert">
+                <div
+                    className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
+
+            {/* Bottone di submit */}
             <div className="flex items-center justify-between">
                 <button
                     type="submit"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-// import PostCard from './PostCard';
-// import Filters from './Filters';
+import PostCard from './PostCard';
+import Filters from './Filters'; // <-- aggiorna qui
 import api from '../api/api';
 
 const PostList = () => {
@@ -63,7 +63,7 @@ const PostList = () => {
 
     return (
         <div className="container mx-auto px-4 sm:px-6 py-6">
-            <Filter onFilter={handleFilter} />
+            <Filters onFilter={handleFilter} /> {/* <-- aggiorna anche qui */}
             {filteredPosts.length === 0 ? (
                 <div className="text-center py-10 text-gray-600">
                     Nessun post trovato con i criteri di ricerca.

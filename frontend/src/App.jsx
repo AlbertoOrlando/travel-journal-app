@@ -5,36 +5,26 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import CreatePostPage from './pages/CreatePostPage';
 import PostDetailsPage from './pages/PostDetailsPage';
-import DefaultLayout from './layout/DefaultLayout';
 import EditPostPage from './pages/EditPostPage';
+import DefaultLayout from './layout/DefaultLayout';
 
-// Componente per le rotte protette
+const Loader = () => (
+  <div className="flex justify-center items-center h-screen">
+    <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500"></div>
+  </div>
+);
+
 const ProtectedRoute = ({ children }) => {
   const { user, initialLoading } = useAuth();
-
-  if (initialLoading) {
-    return <div>Caricamento...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (initialLoading) return <Loader />;
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 };
 
-// Componente per le rotte pubbliche
 const PublicRoute = ({ children }) => {
   const { user, initialLoading } = useAuth();
-
-  if (initialLoading) {
-    return <div>Caricamento...</div>;
-  }
-
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+  if (initialLoading) return <Loader />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -46,13 +36,18 @@ function App() {
           {/* Rotte pubbliche */}
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+
+          {/* Layout principale */}
           <Route path="/" element={<DefaultLayout />}>
-            {/* Rotte protette */}
-            <Route index element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="create" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="create-post" element={<ProtectedRoute><CreatePostPage /></ProtectedRoute>} />
             <Route path="post/:id" element={<ProtectedRoute><PostDetailsPage /></ProtectedRoute>} />
             <Route path="edit-post/:id" element={<ProtectedRoute><EditPostPage /></ProtectedRoute>} />
           </Route>
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
