@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../api/api';
 
 // Contesto Auth
 const AuthContext = createContext();
@@ -33,19 +34,17 @@ export const AuthProvider = ({ children }) => {
             return { success: false, msg: 'Password troppo corta' };
         }
 
-        await new Promise((r) => setTimeout(r, 500)); // simula delay
-
-        if (email === 'test@test.com' && password === '1234') {
-            const userData = { username: 'TestUser', email };
-            const token = 'fake-jwt-token';
+        try {
+            const { token, user: userPayload } = await api.login({ email, password });
+            const userData = userPayload || { email };
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
             localStorage.setItem('token', token);
-            setLoadingLogin(false);
             return { success: true };
-        } else {
+        } catch (err) {
+            return { success: false, msg: err.message || 'Email o password non corretti' };
+        } finally {
             setLoadingLogin(false);
-            return { success: false, msg: 'Email o password non corretti' };
         }
     };
 
@@ -67,15 +66,18 @@ export const AuthProvider = ({ children }) => {
             return { success: false, msg: 'Password troppo corta' };
         }
 
-        await new Promise((r) => setTimeout(r, 500)); // simula delay
-
-        const newUser = { username, email };
-        const token = 'fake-jwt-token';
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        localStorage.setItem('token', token);
-        setLoadingRegister(false);
-        return { success: true };
+        try {
+            const { token, user: userPayload } = await api.register({ username, email, password });
+            const newUser = userPayload || { username, email };
+            setUser(newUser);
+            localStorage.setItem('user', JSON.stringify(newUser));
+            localStorage.setItem('token', token);
+            return { success: true };
+        } catch (err) {
+            return { success: false, msg: err.message || 'Errore di registrazione' };
+        } finally {
+            setLoadingRegister(false);
+        }
     };
 
     // Logout

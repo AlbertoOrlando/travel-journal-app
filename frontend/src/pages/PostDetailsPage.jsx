@@ -1,28 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
 const PostDetailPage = () => {
     const { id } = useParams();
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const result = await api.getPostById(id, token);
-
-                if (result.success) {
-                    setPost(result.data);
-                } else {
-                    setError(result.msg || 'Errore nel caricamento del post.');
-                }
+                // API ritorna direttamente l'oggetto post
+                setPost(result);
             } catch (err) {
-                setError('Errore di rete. Impossibile caricare il post.');
+                setError(err.message || 'Errore nel caricamento del post.');
             } finally {
                 setLoading(false);
             }
@@ -58,27 +56,94 @@ const PostDetailPage = () => {
         );
     }
 
-    const isAuthor = user && post.authorId === user.id;
+    const isAuthor = user && user.id && post.user_id === user.id;
 
     return (
         <main role="main" className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="bg-white rounded-lg shadow-lg p-8">
                 <h1 className="text-4xl font-extrabold text-gray-900 mb-4">{post.title}</h1>
-                <p className="text-gray-500 text-sm mb-6">
-                    Scritto da <span className="font-semibold text-gray-700">{post.author}</span> il {new Date(post.createdAt).toLocaleDateString()}
-                </p>
+                {post.created_at && (
+                    <p className="text-gray-500 text-sm mb-6">
+                        Creato il {new Date(post.created_at).toLocaleDateString()}
+                    </p>
+                )}
                 <div className="prose lg:prose-xl max-w-none text-gray-800">
-                    <p>{post.content}</p>
+                    <p>{post.description || post.content}</p>
+                </div>
+
+                {/* Extra details */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    {post.location && (
+                        <div>
+                            <span className="font-semibold">Località:</span> {post.location}
+                        </div>
+                    )}
+                    {(post.latitude !== null && post.latitude !== undefined) || (post.longitude !== null && post.longitude !== undefined) ? (
+                        <div>
+                            <span className="font-semibold">Coordinate:</span> {post.latitude ?? '—'}, {post.longitude ?? '—'}
+                        </div>
+                    ) : null}
+                    {post.mood && (
+                        <div>
+                            <span className="font-semibold">Umore:</span> {post.mood}
+                        </div>
+                    )}
+                    {(post.physical_effort || post.economic_effort) && (
+                        <div>
+                            <span className="font-semibold">Sforzo fisico/economico:</span> {post.physical_effort ?? '—'}/{post.economic_effort ?? '—'}
+                        </div>
+                    )}
+                    {(post.actual_cost !== null && post.actual_cost !== undefined) && (
+                        <div>
+                            <span className="font-semibold">Costo effettivo:</span> € {post.actual_cost}
+                        </div>
+                    )}
+                    {post.media_url && (
+                        <div>
+                            <span className="font-semibold">Media:</span> <a href={post.media_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Apri</a>
+                        </div>
+                    )}
+                    {Array.isArray(post.tags) && post.tags.length > 0 && (
+                        <div className="md:col-span-2">
+                            <span className="font-semibold">Tags:</span>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {post.tags.map((t) => (
+                                    <span key={t} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">#{t}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {isAuthor && (
-                    <div className="mt-8 flex justify-end">
+                    <div className="mt-8 flex justify-end gap-3">
                         <Link
                             to={`/edit-post/${post.id}`}
                             className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200"
                         >
                             Modifica Post
                         </Link>
+                        <button
+                            type="button"
+                            disabled={deleting}
+                            onClick={async () => {
+                                setError('');
+                                if (!window.confirm('Sei sicuro di voler eliminare questo post?')) return;
+                                setDeleting(true);
+                                try {
+                                    const token = localStorage.getItem('token');
+                                    await api.deletePost(post.id, token);
+                                    navigate('/dashboard');
+                                } catch (err) {
+                                    setError(err.message || "Errore nell'eliminazione del post.");
+                                } finally {
+                                    setDeleting(false);
+                                }
+                            }}
+                            className={`bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 ${deleting ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        >
+                            {deleting ? 'Eliminazione...' : 'Elimina Post'}
+                        </button>
                     </div>
                 )}
 

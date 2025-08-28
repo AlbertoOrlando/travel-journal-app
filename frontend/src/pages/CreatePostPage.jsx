@@ -16,12 +16,17 @@ const CreatePostPage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const result = await api.createPost(formData, token);
+            const tags = (formData.tags || '')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean);
+            const payload = { ...formData, tags };
+            const result = await api.createPost(payload, token);
 
-            if (result.success) {
+            if (result && (result.id || result.msg)) {
+                // Se l'API risponde 201 con l'id del post, lo consideriamo un successo
                 navigate('/dashboard');
-            } else {
-                setError(result.msg || 'Errore nella creazione del post.');
+                return;
             }
         } catch (err) {
             setError(err.message || 'Errore inaspettato. Riprova.');

@@ -17,18 +17,10 @@ const EditPostPage = () => {
             try {
                 const token = localStorage.getItem('token');
                 const result = await api.getPostById(id, token);
-
-                if (result.success) {
-                    if (result.data.authorId !== user.id) {
-                        setError("Non hai i permessi per modificare questo post.");
-                    } else {
-                        setInitialData(result.data);
-                    }
-                } else {
-                    setError(result.msg || 'Errore nel caricamento del post.');
-                }
+                // API ritorna direttamente il post del proprietario (middleware auth già filtra)
+                setInitialData(result);
             } catch (err) {
-                setError('Errore di rete. Impossibile caricare il post.');
+                setError(err.message || 'Errore nel caricamento del post.');
             } finally {
                 setLoading(false);
             }
@@ -43,13 +35,13 @@ const EditPostPage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const result = await api.updatePost(id, formData, token);
-
-            if (result.success) {
-                navigate(`/post/${id}`);
-            } else {
-                setError(result.msg || "Errore nell'aggiornamento del post.");
-            }
+            const tags = (formData.tags || '')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean);
+            const payload = { ...formData, tags };
+            await api.updatePost(id, payload, token);
+            navigate(`/post/${id}`);
         } catch (err) {
             setError(err.message || 'Errore inaspettato. Riprova.');
         } finally {

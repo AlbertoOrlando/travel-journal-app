@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 // Importiamo i router
 const authRoutes = require('./routes/auth');
 const postsRoutes = require('./routes/posts');
+const tagsRoutes = require('./routes/tags');
 
 // Configurazione di dotenv per caricare le variabili d'ambiente
 dotenv.config();
@@ -32,6 +33,7 @@ app.use(express.json());
 // Definizione delle route API
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
+app.use('/api/tags', tagsRoutes);
 
 // Avvio del server
 app.listen(PORT, () => {

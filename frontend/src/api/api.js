@@ -76,6 +76,12 @@ const api = {
             method: 'DELETE',
             headers: getHeaders(token),
         }),
+
+    getTags: (token) =>
+        request(`${API_URL}/tags`, {
+            method: 'GET',
+            headers: getHeaders(token),
+        }),
 };
 
 export default api;

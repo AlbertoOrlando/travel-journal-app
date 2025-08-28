@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import PostCard from './PostCard';
-import Filters from './Filters'; // <-- aggiorna qui
+import Filters from './Filters';
 import api from '../api/api';
 
 const PostList = () => {
@@ -8,22 +8,19 @@ const PostList = () => {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({ text: '', mood: '', tag: '', sort: 'date_desc' });
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const result = await api.getPosts(token);
-
-                if (result.success) {
-                    setPosts(result.data);
-                    setFilteredPosts(result.data);
-                } else {
-                    setError(result.msg || 'Errore nel caricamento dei post.');
-                }
+                // L'API restituisce direttamente un array di post
+                const list = Array.isArray(result) ? result : [];
+                setPosts(list);
+                setFilteredPosts(list);
             } catch (err) {
-                setError('Errore di rete. Impossibile caricare i post.');
+                setError(err.message || 'Errore nel caricamento dei post.');
             } finally {
                 setLoading(false);
             }
@@ -33,14 +30,39 @@ const PostList = () => {
     }, []);
 
     useEffect(() => {
-        const filtered = posts.filter(post =>
-            post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            post.content.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredPosts(filtered);
-    }, [searchTerm, posts]);
+        let result = posts.filter(post => {
+            const title = (post.title || '').toLowerCase();
+            const body = (post.description || post.content || '').toLowerCase();
+            const term = (filters.text || '').toLowerCase();
+            const mood = (post.mood || '').toLowerCase();
+            const moodFilter = (filters.mood || '').toLowerCase();
+            const hasText = !term || title.includes(term) || body.includes(term);
+            const hasMood = !moodFilter || mood.includes(moodFilter);
+            const tagFilter = (filters.tag || '').toLowerCase();
+            const hasTag = !tagFilter || (Array.isArray(post.tags) && post.tags.some(t => t.toLowerCase().includes(tagFilter)));
+            return hasText && hasMood && hasTag;
+        });
 
-    const handleFilter = (term) => setSearchTerm(term);
+        // Sorting
+        switch (filters.sort) {
+            case 'date_asc':
+                result = result.sort((a, b) => new Date(a.created_at || a.createdAt || 0) - new Date(b.created_at || b.createdAt || 0));
+                break;
+            case 'cost_desc':
+                result = result.sort((a, b) => (parseFloat(b.actual_cost) || 0) - (parseFloat(a.actual_cost) || 0));
+                break;
+            case 'cost_asc':
+                result = result.sort((a, b) => (parseFloat(a.actual_cost) || 0) - (parseFloat(b.actual_cost) || 0));
+                break;
+            case 'date_desc':
+            default:
+                result = result.sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0));
+        }
+
+        setFilteredPosts(result);
+    }, [filters, posts]);
+
+    const handleFilter = (f) => setFilters(f);
 
     if (loading) {
         return (
@@ -63,7 +85,7 @@ const PostList = () => {
 
     return (
         <div className="container mx-auto px-4 sm:px-6 py-6">
-            <Filters onFilter={handleFilter} /> {/* <-- aggiorna anche qui */}
+            <Filters onFilter={handleFilter} />
             {filteredPosts.length === 0 ? (
                 <div className="text-center py-10 text-gray-600">
                     Nessun post trovato con i criteri di ricerca.

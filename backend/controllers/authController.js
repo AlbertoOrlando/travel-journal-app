@@ -52,7 +52,11 @@ const register = async (req, res) => {
             }
         });
 
-        res.status(201).json({ token, msg: 'Utente registrato con successo! Controlla la tua email per la conferma.' });
+        res.status(201).json({
+            token,
+            user: { id: result.insertId, username, email },
+            msg: 'Utente registrato con successo! Controlla la tua email per la conferma.'
+        });
     } catch (err) {
         console.error('Errore di registrazione:', err);
         if (err.code === 'ER_DUP_ENTRY') {
@@ -85,7 +89,11 @@ const login = async (req, res) => {
 
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.status(200).json({ token, msg: 'Login effettuato con successo!' });
+        res.status(200).json({
+            token,
+            user: { id: user.id, username: user.username, email: user.email },
+            msg: 'Login effettuato con successo!'
+        });
     } catch (err) {
         console.error('Errore di login:', err);
         res.status(500).json({ msg: 'Errore del server' });

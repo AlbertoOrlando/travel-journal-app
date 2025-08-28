@@ -4,15 +4,37 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
     // Stato iniziale stabile: evita reset involontari durante la digitazione
     const [formData, setFormData] = useState({
         title: initialData.title || '',
-        content: initialData.content || '',
+        description: initialData.description || initialData.content || '',
+        location: initialData.location || '',
+        latitude: initialData.latitude ?? '',
+        longitude: initialData.longitude ?? '',
+        mood: initialData.mood || '',
+        positive_note: initialData.positive_note || '',
+        negative_note: initialData.negative_note || '',
+        physical_effort: initialData.physical_effort ?? '',
+        economic_effort: initialData.economic_effort ?? '',
+        actual_cost: initialData.actual_cost ?? '',
+        media_url: initialData.media_url || '',
+        tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : '',
     });
 
     // Aggiorna lo stato solo se initialData cambia realmente
     useEffect(() => {
-        if (initialData && (initialData.title || initialData.content)) {
+        if (initialData && (initialData.title || initialData.description || initialData.content)) {
             setFormData({
                 title: initialData.title || '',
-                content: initialData.content || '',
+                description: initialData.description || initialData.content || '',
+                location: initialData.location || '',
+                latitude: initialData.latitude ?? '',
+                longitude: initialData.longitude ?? '',
+                mood: initialData.mood || '',
+                positive_note: initialData.positive_note || '',
+                negative_note: initialData.negative_note || '',
+                physical_effort: initialData.physical_effort ?? '',
+                economic_effort: initialData.economic_effort ?? '',
+                actual_cost: initialData.actual_cost ?? '',
+                media_url: initialData.media_url || '',
+                tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : '',
             });
         }
     }, [initialData]);
@@ -46,20 +68,205 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                 />
             </div>
 
-            {/* Contenuto */}
+            {/* Descrizione */}
             <div className="mb-6">
-                <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">
-                    Contenuto
+                <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">
+                    Descrizione
                 </label>
                 <textarea
-                    id="content"
-                    name="content"
-                    value={formData.content}
+                    id="description"
+                    name="description"
+                    value={formData.description}
                     onChange={handleChange}
                     placeholder="Scrivi il tuo post qui..."
                     rows="10"
                     required
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+                />
+            </div>
+
+            {/* Location */}
+            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">
+                        Località
+                    </label>
+                    <input
+                        id="location"
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        placeholder="Es. Roma, IT"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="latitude" className="block text-gray-700 text-sm font-bold mb-2">
+                        Latitudine
+                    </label>
+                    <input
+                        id="latitude"
+                        type="number"
+                        step="0.00000001"
+                        name="latitude"
+                        value={formData.latitude}
+                        onChange={handleChange}
+                        placeholder="Es. 41.9028"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="longitude" className="block text-gray-700 text-sm font-bold mb-2">
+                        Longitudine
+                    </label>
+                    <input
+                        id="longitude"
+                        type="number"
+                        step="0.00000001"
+                        name="longitude"
+                        value={formData.longitude}
+                        onChange={handleChange}
+                        placeholder="Es. 12.4964"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+            </div>
+
+            {/* Mood */}
+            <div className="mb-4">
+                <label htmlFor="mood" className="block text-gray-700 text-sm font-bold mb-2">
+                    Umore
+                </label>
+                <input
+                    id="mood"
+                    type="text"
+                    name="mood"
+                    value={formData.mood}
+                    onChange={handleChange}
+                    placeholder="Es. felice, rilassato, avventuroso..."
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+            </div>
+
+            {/* Note positive/negative */}
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="positive_note" className="block text-gray-700 text-sm font-bold mb-2">
+                        Nota positiva
+                    </label>
+                    <textarea
+                        id="positive_note"
+                        name="positive_note"
+                        value={formData.positive_note}
+                        onChange={handleChange}
+                        placeholder="Cosa è andato bene?"
+                        rows="4"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="negative_note" className="block text-gray-700 text-sm font-bold mb-2">
+                        Nota negativa
+                    </label>
+                    <textarea
+                        id="negative_note"
+                        name="negative_note"
+                        value={formData.negative_note}
+                        onChange={handleChange}
+                        placeholder="Cosa poteva andare meglio?"
+                        rows="4"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+                    />
+                </div>
+            </div>
+
+            {/* Sforzi e costo */}
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label htmlFor="physical_effort" className="block text-gray-700 text-sm font-bold mb-2">
+                        Sforzo fisico (1-5)
+                    </label>
+                    <select
+                        id="physical_effort"
+                        name="physical_effort"
+                        value={formData.physical_effort}
+                        onChange={handleChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    >
+                        <option value="">N/D</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="economic_effort" className="block text-gray-700 text-sm font-bold mb-2">
+                        Sforzo economico (1-5)
+                    </label>
+                    <select
+                        id="economic_effort"
+                        name="economic_effort"
+                        value={formData.economic_effort}
+                        onChange={handleChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    >
+                        <option value="">N/D</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="actual_cost" className="block text-gray-700 text-sm font-bold mb-2">
+                        Costo effettivo (€)
+                    </label>
+                    <input
+                        id="actual_cost"
+                        type="number"
+                        step="0.01"
+                        name="actual_cost"
+                        value={formData.actual_cost}
+                        onChange={handleChange}
+                        placeholder="Es. 123.45"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+            </div>
+
+            {/* Media URL */}
+            <div className="mb-6">
+                <label htmlFor="media_url" className="block text-gray-700 text-sm font-bold mb-2">
+                    Media URL
+                </label>
+                <input
+                    id="media_url"
+                    type="text"
+                    name="media_url"
+                    value={formData.media_url}
+                    onChange={handleChange}
+                    placeholder="Link a foto/video"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+            </div>
+
+            {/* Tags */}
+            <div className="mb-6">
+                <label htmlFor="tags" className="block text-gray-700 text-sm font-bold mb-2">
+                    Tags (separati da virgola)
+                </label>
+                <input
+                    id="tags"
+                    type="text"
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleChange}
+                    placeholder="es. mare, estate, relax"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
             </div>
 

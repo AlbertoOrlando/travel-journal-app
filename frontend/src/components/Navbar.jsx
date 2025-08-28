@@ -23,7 +23,7 @@ const Navbar = () => {
                     {user ? (
                         <>
                             <span className="text-gray-700 font-medium">
-                                Benvenuto, {user.username}!
+                                Benvenuto, {(user.username || user.email || 'Utente')}!
                             </span>
                             <button
                                 onClick={logout}
