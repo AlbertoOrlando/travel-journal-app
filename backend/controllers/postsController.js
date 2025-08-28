@@ -103,7 +103,8 @@ const createPost = async (req, res) => {
     // Determina media_url: preferisci file upload se presente
     let finalMediaUrl = strOrNull(media_url);
     if (req.file && req.file.filename) {
-        finalMediaUrl = `/uploads/${req.file.filename}`;
+        const host = `${req.protocol}://${req.get('host')}`;
+        finalMediaUrl = `${host}/uploads/${req.file.filename}`;
     }
 
     const values = [
@@ -171,7 +172,13 @@ const getPosts = async (req, res) => {
                 [userId]
             );
             const withTags = await attachTagsToPosts(connection, rows);
-            res.status(200).json(withTags);
+            // Mappa media_url relative a assolute
+            const host = `${req.protocol}://${req.get('host')}`;
+            const mapped = withTags.map(p => ({
+                ...p,
+                media_url: p.media_url && p.media_url.startsWith('/uploads/') ? `${host}${p.media_url}` : p.media_url,
+            }));
+            res.status(200).json(mapped);
         } finally {
             connection.release();
         }
@@ -196,7 +203,12 @@ const getPostById = async (req, res) => {
                 return res.status(404).json({ msg: 'Post non trovato o non autorizzato' });
             }
             const [withTags] = await attachTagsToPosts(connection, rows);
-            res.status(200).json(withTags || rows[0]);
+            const post = withTags || rows[0];
+            const host = `${req.protocol}://${req.get('host')}`;
+            if (post && post.media_url && String(post.media_url).startsWith('/uploads/')) {
+                post.media_url = `${host}${post.media_url}`;
+            }
+            res.status(200).json(post);
         } finally {
             connection.release();
         }
@@ -251,7 +263,8 @@ const updatePost = async (req, res) => {
     // Determina media_url finale
     let finalMediaUrl = strOrNull(media_url);
     if (req.file && req.file.filename) {
-        finalMediaUrl = `/uploads/${req.file.filename}`;
+        const host = `${req.protocol}://${req.get('host')}`;
+        finalMediaUrl = `${host}/uploads/${req.file.filename}`;
     }
 
     const values = [
