@@ -9,6 +9,7 @@ const PostList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [filters, setFilters] = useState({ text: '', mood: '', tag: '', sort: 'date_desc' });
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -85,17 +86,69 @@ const PostList = () => {
 
     return (
         <div className="container mx-auto px-4 sm:px-6 py-6">
-            <Filters onFilter={handleFilter} />
+            {/* Barra controlli: filtri + scelta vista */}
+            <div className="mb-4">
+                <Filters onFilter={handleFilter} />
+                <div className="flex items-center justify-end gap-2 mt-2">
+                    <span className="text-sm text-gray-600">Vista:</span>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('grid')}
+                        className={`px-3 py-1 rounded text-sm border ${viewMode === 'grid' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                        aria-pressed={viewMode === 'grid'}
+                    >
+                        Griglia
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('list')}
+                        className={`px-3 py-1 rounded text-sm border ${viewMode === 'list' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                        aria-pressed={viewMode === 'list'}
+                    >
+                        Lista
+                    </button>
+                </div>
+            </div>
+
             {filteredPosts.length === 0 ? (
                 <div className="text-center py-10 text-gray-600">
                     Nessun post trovato con i criteri di ricerca.
                 </div>
             ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredPosts.map(post => (
-                        <PostCard key={post.id} post={post} />
-                    ))}
-                </div>
+                viewMode === 'grid' ? (
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {filteredPosts.map(post => (
+                            <PostCard key={post.id} post={post} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-200 bg-white rounded-md shadow">
+                        {filteredPosts.map(post => {
+                            const createdAt = post.created_at || post.createdAt;
+                            const preview = (post.description || post.content || '').toString();
+                            return (
+                                <a key={post.id} href={`#/post/${post.id}`} className="block p-4 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-lg font-semibold text-gray-800 truncate">{post.title}</h3>
+                                            {createdAt && (
+                                                <p className="text-xs text-gray-500 mt-1">{new Date(createdAt).toLocaleDateString()}</p>
+                                            )}
+                                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{preview}</p>
+                                            {Array.isArray(post.tags) && post.tags.length > 0 && (
+                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                    {post.tags.map((t) => (
+                                                        <span key={t} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">#{t}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </a>
+                            );
+                        })}
+                    </div>
+                )
             )}
         </div>
     );
