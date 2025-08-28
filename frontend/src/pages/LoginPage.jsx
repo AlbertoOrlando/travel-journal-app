@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -41,17 +41,17 @@ const LoginPage = () => {
                 <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Accedi</h2>
                 <form onSubmit={handleSubmit} autoComplete="on">
                     <div className="mb-4">
-                        <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-                            Email
+                        <label htmlFor="identifier" className="block text-gray-700 text-sm font-bold mb-2">
+                            Email o Username
                         </label>
                         <input
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={formData.email}
+                            id="identifier"
+                            type="text"
+                            name="identifier"
+                            value={formData.identifier}
                             onChange={handleChange}
-                            placeholder="Email"
-                            autoComplete="email"
+                            placeholder="Email o Username"
+                            autoComplete="username"
                             required
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         />

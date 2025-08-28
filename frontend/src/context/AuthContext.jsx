@@ -21,13 +21,13 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Funzione di login
-    const login = async ({ email, password }) => {
+    const login = async ({ identifier, password }) => {
         setLoadingLogin(true);
 
         // Validazioni base lato client
-        if (!email.includes('@')) {
+        if (!identifier || identifier.trim().length === 0) {
             setLoadingLogin(false);
-            return { success: false, msg: 'Email non valida' };
+            return { success: false, msg: 'Inserisci email o username' };
         }
         if (!password || password.length < 4) {
             setLoadingLogin(false);
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const { token, user: userPayload } = await api.login({ email, password });
+            const { token, user: userPayload } = await api.login({ identifier, password });
             const userData = userPayload || { email };
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));

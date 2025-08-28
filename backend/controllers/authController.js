@@ -67,14 +67,19 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, username, identifier, password } = req.body;
+    const loginId = identifier || email || username; // supporta sia email che username
 
-    if (!email || !password) {
-        return res.status(400).json({ msg: 'Inserisci email e password' });
+    if (!loginId || !password) {
+        return res.status(400).json({ msg: 'Inserisci email/username e password' });
     }
 
     try {
-        const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+        // Cerca per email O username
+        const [rows] = await pool.execute(
+            'SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1',
+            [loginId, loginId]
+        );
         const user = rows[0];
 
         if (!user) {
