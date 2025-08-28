@@ -99,8 +99,17 @@ const PostDetailPage = () => {
                         </div>
                     )}
                     {post.media_url && (
-                        <div>
-                            <span className="font-semibold">Media:</span> <a href={post.media_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Apri</a>
+                        <div className="md:col-span-2">
+                            <span className="font-semibold">Media:</span>
+                            <div className="mt-2">
+                                {/\.(jpg|jpeg|png|gif|webp)$/i.test(post.media_url) ? (
+                                    <img src={post.media_url} alt="media" className="max-w-full h-auto rounded" />
+                                ) : /\.(mp4|webm|ogg)$/i.test(post.media_url) ? (
+                                    <video src={post.media_url} controls className="w-full rounded" />
+                                ) : (
+                                    <a href={post.media_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Apri</a>
+                                )}
+                            </div>
                         </div>
                     )}
                     {Array.isArray(post.tags) && post.tags.length > 0 && (

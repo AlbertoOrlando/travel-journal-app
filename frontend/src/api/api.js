@@ -30,6 +30,8 @@ const request = async (url, options = {}) => {
     }
 };
 
+const isFormData = (body) => (typeof FormData !== 'undefined' && body instanceof FormData);
+
 const api = {
     register: (userData) =>
         request(`${API_URL}/auth/register`, {
@@ -45,12 +47,14 @@ const api = {
             body: JSON.stringify(credentials),
         }),
 
-    createPost: (postData, token) =>
-        request(`${API_URL}/posts`, {
+    createPost: (postData, token) => {
+        const form = isFormData(postData);
+        return request(`${API_URL}/posts`, {
             method: 'POST',
-            headers: getHeaders(token, true),
-            body: JSON.stringify(postData),
-        }),
+            headers: getHeaders(token, !form),
+            body: form ? postData : JSON.stringify(postData),
+        });
+    },
 
     getPosts: (token) =>
         request(`${API_URL}/posts`, {
@@ -64,12 +68,14 @@ const api = {
             headers: getHeaders(token),
         }),
 
-    updatePost: (postId, postData, token) =>
-        request(`${API_URL}/posts/${postId}`, {
+    updatePost: (postId, postData, token) => {
+        const form = isFormData(postData);
+        return request(`${API_URL}/posts/${postId}`, {
             method: 'PUT',
-            headers: getHeaders(token, true),
-            body: JSON.stringify(postData),
-        }),
+            headers: getHeaders(token, !form),
+            body: form ? postData : JSON.stringify(postData),
+        });
+    },
 
     deletePost: (postId, token) =>
         request(`${API_URL}/posts/${postId}`, {

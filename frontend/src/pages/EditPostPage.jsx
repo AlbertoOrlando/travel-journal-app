@@ -39,8 +39,27 @@ const EditPostPage = () => {
                 .split(',')
                 .map((t) => t.trim())
                 .filter(Boolean);
-            const payload = { ...formData, tags };
-            await api.updatePost(id, payload, token);
+
+            if (formData.media_file) {
+                const fd = new FormData();
+                fd.append('title', formData.title);
+                fd.append('description', formData.description);
+                if (formData.location) fd.append('location', formData.location);
+                if (formData.latitude !== '' && formData.latitude !== null && formData.latitude !== undefined) fd.append('latitude', String(formData.latitude));
+                if (formData.longitude !== '' && formData.longitude !== null && formData.longitude !== undefined) fd.append('longitude', String(formData.longitude));
+                if (formData.mood) fd.append('mood', formData.mood);
+                if (formData.positive_note) fd.append('positive_note', formData.positive_note);
+                if (formData.negative_note) fd.append('negative_note', formData.negative_note);
+                if (formData.physical_effort !== '' && formData.physical_effort !== null && formData.physical_effort !== undefined) fd.append('physical_effort', String(formData.physical_effort));
+                if (formData.economic_effort !== '' && formData.economic_effort !== null && formData.economic_effort !== undefined) fd.append('economic_effort', String(formData.economic_effort));
+                if (formData.actual_cost !== '' && formData.actual_cost !== null && formData.actual_cost !== undefined) fd.append('actual_cost', String(formData.actual_cost));
+                if (tags.length) fd.append('tags', JSON.stringify(tags));
+                fd.append('media_file', formData.media_file);
+                await api.updatePost(id, fd, token);
+            } else {
+                const payload = { ...formData, tags };
+                await api.updatePost(id, payload, token);
+            }
             navigate(`/post/${id}`);
         } catch (err) {
             setError(err.message || 'Errore inaspettato. Riprova.');

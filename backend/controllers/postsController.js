@@ -100,6 +100,12 @@ const createPost = async (req, res) => {
         return res.status(400).json({ msg: 'economic_effort deve essere tra 1 e 5' });
     }
 
+    // Determina media_url: preferisci file upload se presente
+    let finalMediaUrl = strOrNull(media_url);
+    if (req.file && req.file.filename) {
+        finalMediaUrl = `/uploads/${req.file.filename}`;
+    }
+
     const values = [
         userId,
         String(title),
@@ -113,7 +119,7 @@ const createPost = async (req, res) => {
         phys,
         econ,
         floatOrNull(actual_cost),
-        strOrNull(media_url),
+        finalMediaUrl,
     ];
 
     try {
@@ -125,9 +131,19 @@ const createPost = async (req, res) => {
             values
         );
 
-            // Gestione tags opzionali
-            if (Array.isArray(tags) && tags.length > 0) {
-                await upsertTagsAndLink(connection, result.insertId, tags);
+            // Gestione tags opzionali (array o string JSON o CSV)
+            let tagList = tags;
+            if (typeof tagList === 'string') {
+                try {
+                    const parsed = JSON.parse(tagList);
+                    if (Array.isArray(parsed)) tagList = parsed;
+                    else tagList = String(tagList).split(',');
+                } catch {
+                    tagList = String(tagList).split(',');
+                }
+            }
+            if (Array.isArray(tagList) && tagList.length > 0) {
+                await upsertTagsAndLink(connection, result.insertId, tagList);
             }
 
             await connection.commit();
@@ -232,6 +248,12 @@ const updatePost = async (req, res) => {
         return res.status(400).json({ msg: 'economic_effort deve essere tra 1 e 5' });
     }
 
+    // Determina media_url finale
+    let finalMediaUrl = strOrNull(media_url);
+    if (req.file && req.file.filename) {
+        finalMediaUrl = `/uploads/${req.file.filename}`;
+    }
+
     const values = [
         String(title),
         String(description),
@@ -244,7 +266,7 @@ const updatePost = async (req, res) => {
         phys,
         econ,
         floatOrNull(actual_cost),
-        strOrNull(media_url),
+        finalMediaUrl,
         id,
         userId,
     ];
@@ -263,8 +285,18 @@ const updatePost = async (req, res) => {
                 return res.status(404).json({ msg: 'Post non trovato o non autorizzato' });
             }
 
-            if (Array.isArray(tags)) {
-                await replacePostTags(connection, id, tags);
+            let tagList = tags;
+            if (typeof tagList === 'string') {
+                try {
+                    const parsed = JSON.parse(tagList);
+                    if (Array.isArray(parsed)) tagList = parsed;
+                    else tagList = String(tagList).split(',');
+                } catch {
+                    tagList = String(tagList).split(',');
+                }
+            }
+            if (Array.isArray(tagList)) {
+                await replacePostTags(connection, id, tagList);
             }
 
             await connection.commit();

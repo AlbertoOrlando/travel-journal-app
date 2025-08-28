@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const pool = require('./config/db'); // Corretto: il percorso del file
 const dotenv = require('dotenv');
@@ -17,6 +18,8 @@ const PORT = process.env.PORT || 5001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Servizio statico per file caricati
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Verifica della connessione al database
 (async () => {

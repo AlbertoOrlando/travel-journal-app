@@ -17,6 +17,8 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
         media_url: initialData.media_url || '',
         tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : '',
     });
+    const [mediaMethod, setMediaMethod] = useState(initialData.media_url ? 'url' : 'upload');
+    const [mediaFile, setMediaFile] = useState(null);
 
     // Aggiorna lo stato solo se initialData cambia realmente
     useEffect(() => {
@@ -36,6 +38,8 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                 media_url: initialData.media_url || '',
                 tags: Array.isArray(initialData.tags) ? initialData.tags.join(', ') : '',
             });
+            setMediaMethod(initialData.media_url ? 'url' : 'upload');
+            setMediaFile(null);
         }
     }, [initialData]);
 
@@ -46,7 +50,17 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        const payload = { ...formData };
+        if (mediaMethod === 'upload') {
+            // Invia il file al parent per creare un FormData
+            payload.media_file = mediaFile || null;
+            // Se si sceglie upload, ignora media_url testuale
+            delete payload.media_url;
+        } else {
+            // URL: ignora media_file
+            payload.media_file = null;
+        }
+        onSubmit(payload);
     };
 
     return (
@@ -240,18 +254,46 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
 
             {/* Media URL */}
             <div className="mb-6">
-                <label htmlFor="media_url" className="block text-gray-700 text-sm font-bold mb-2">
-                    Media URL
-                </label>
-                <input
-                    id="media_url"
-                    type="text"
-                    name="media_url"
-                    value={formData.media_url}
-                    onChange={handleChange}
-                    placeholder="Link a foto/video"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
+                <span className="block text-gray-700 text-sm font-bold mb-2">Media</span>
+                <div className="flex items-center gap-4 mb-3">
+                    <label className="flex items-center gap-2">
+                        <input
+                            type="radio"
+                            name="media_method"
+                            checked={mediaMethod === 'url'}
+                            onChange={() => setMediaMethod('url')}
+                        />
+                        <span>URL</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                        <input
+                            type="radio"
+                            name="media_method"
+                            checked={mediaMethod === 'upload'}
+                            onChange={() => setMediaMethod('upload')}
+                        />
+                        <span>Upload</span>
+                    </label>
+                </div>
+                {mediaMethod === 'url' ? (
+                    <input
+                        id="media_url"
+                        type="text"
+                        name="media_url"
+                        value={formData.media_url}
+                        onChange={handleChange}
+                        placeholder="Link a foto/video"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                ) : (
+                    <input
+                        id="media_file"
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={(e) => setMediaFile(e.target.files?.[0] || null)}
+                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                )}
             </div>
 
             {/* Tags */}
