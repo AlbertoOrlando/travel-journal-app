@@ -38,7 +38,8 @@ const PostList = () => {
             const mood = (post.mood || '').toLowerCase();
             const moodFilter = (filters.mood || '').toLowerCase();
             const hasText = !term || title.includes(term) || body.includes(term);
-            const hasMood = !moodFilter || mood.includes(moodFilter);
+            // Con select predefinita meglio confronto esatto (case-insensitive)
+            const hasMood = !moodFilter || mood === moodFilter;
             const tagFilter = (filters.tag || '').toLowerCase();
             const hasTag = !tagFilter || (Array.isArray(post.tags) && post.tags.some(t => t.toLowerCase().includes(tagFilter)));
             return hasText && hasMood && hasTag;

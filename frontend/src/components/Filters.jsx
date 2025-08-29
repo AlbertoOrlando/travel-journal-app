@@ -27,14 +27,19 @@ const Filters = ({ onFilter }) => {
                 onChange={(e) => { setTag(e.target.value); emit({ tag: e.target.value }); }}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <input
-                type="text"
-                placeholder="Umore (es. felice)"
+            <select
                 aria-label="Filtro umore"
                 value={mood}
                 onChange={(e) => { setMood(e.target.value); emit({ mood: e.target.value }); }}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+                <option value="">Tutti gli umori</option>
+                <option value="entusiasta">Entusiasta</option>
+                <option value="bella esperienza">Bella esperienza</option>
+                <option value="normale">Normale</option>
+                <option value="così così">Così così</option>
+                <option value="delusione totale">Delusione totale</option>
+            </select>
             <select
                 value={sort}
                 onChange={(e) => { setSort(e.target.value); emit({ sort: e.target.value }); }}
