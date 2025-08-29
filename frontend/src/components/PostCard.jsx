@@ -13,12 +13,7 @@ const PostCard = ({ post }) => {
                         {post.title}
                     </h2>
                 </Link>
-                {createdAt && (
-                    <p className="text-gray-600 text-sm mb-4">
-                        Creato il {new Date(createdAt).toLocaleDateString()}
-                    </p>
-                )}
-                {/* Media thumbnail (se immagine) sotto titolo e data */}
+                {/* Media thumbnail (se immagine) subito dopo il titolo */}
                 {isImage && (
                     <Link to={`/post/${post.id}`} className="block mb-4">
                         <div className="w-full h-48 bg-white overflow-hidden rounded">
@@ -29,6 +24,11 @@ const PostCard = ({ post }) => {
                 {!isImage && (
                     <p className="text-gray-700 text-base mb-4 line-clamp-3">
                         {preview}
+                    </p>
+                )}
+                {createdAt && (
+                    <p className="text-gray-600 text-sm mb-4">
+                        Creato il {new Date(createdAt).toLocaleDateString()}
                     </p>
                 )}
                 {Array.isArray(post.tags) && post.tags.length > 0 && (
