@@ -68,7 +68,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             {/* Titolo */}
             <div className="mb-4">
                 <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
-                    Titolo(obbligatorio)
+                    Titolo (obbligatorio)
                 </label>
                 <input
                     id="title"
@@ -85,7 +85,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             {/* Descrizione */}
             <div className="mb-6">
                 <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">
-                    Descrizione(obbligatorio)
+                    Descrizione (obbligatorio)
                 </label>
                 <textarea
                     id="description"
