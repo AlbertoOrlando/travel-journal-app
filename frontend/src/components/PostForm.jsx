@@ -24,9 +24,13 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
     const [latError, setLatError] = useState('');
     const [lonError, setLonError] = useState('');
     const [coordPairError, setCoordPairError] = useState('');
-    // Errori dinamici titolo/descrizione
-    const [titleError, setTitleError] = useState('');
-    const [descError, setDescError] = useState('');
+    // Errori dinamici titolo/descrizione (mostra errori anche all'apertura del form)
+    const initialDesc = (initialData.description || initialData.content || '').toString();
+    const [titleError, setTitleError] = useState(() => {
+        const t = (initialData.title || '').toString();
+        return t.trim() ? '' : 'Titolo richiesto';
+    });
+    const [descError, setDescError] = useState(() => (initialDesc.trim() ? '' : 'Descrizione richiesta'));
     const [placeQuery, setPlaceQuery] = useState('');
     const [placeLoading, setPlaceLoading] = useState(false);
     const [placeResults, setPlaceResults] = useState([]);
@@ -51,6 +55,11 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             });
             setMediaMethod(initialData.media_url ? 'url' : 'upload');
             setMediaFile(null);
+            // Aggiorna errori basati sui dati caricati (edit)
+            const t = (initialData.title || '').toString();
+            const d = (initialData.description || initialData.content || '').toString();
+            setTitleError(t.trim() ? '' : 'Titolo richiesto');
+            setDescError(d.trim() ? '' : 'Descrizione richiesta');
         }
     }, [initialData]);
 
