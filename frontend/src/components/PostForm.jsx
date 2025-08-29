@@ -154,63 +154,6 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                 />
             </div>
 
-            {/* Location */}
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">
-                        Località
-                    </label>
-                    <input
-                        id="location"
-                        type="text"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleChange}
-                        placeholder="Es. Roma, IT"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="latitude" className="block text-gray-700 text-sm font-bold mb-2">
-                        Latitudine
-                    </label>
-                    <input
-                        id="latitude"
-                        type="number"
-                        step="0.000001"
-                        min="-90"
-                        max="90"
-                        name="latitude"
-                        value={formData.latitude}
-                        onChange={handleChange}
-                        placeholder="Es. 41.9028"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    {latError && <p className="text-red-500 text-xs mt-1">{latError}</p>}
-                </div>
-                <div>
-                    <label htmlFor="longitude" className="block text-gray-700 text-sm font-bold mb-2">
-                        Longitudine
-                    </label>
-                    <input
-                        id="longitude"
-                        type="number"
-                        step="0.000001"
-                        min="-180"
-                        max="180"
-                        name="longitude"
-                        value={formData.longitude}
-                        onChange={handleChange}
-                        placeholder="Es. 12.4964"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                    {lonError && <p className="text-red-500 text-xs mt-1">{lonError}</p>}
-                </div>
-            </div>
-            {coordPairError && (
-                <p className="text-red-500 text-xs -mt-2 mb-4">{coordPairError}</p>
-            )}
-
             {/* Ricerca luoghi */}
             <div className="mb-6">
                 <label htmlFor="place_search" className="block text-gray-700 text-sm font-bold mb-2">
@@ -269,6 +212,64 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     </ul>
                 )}
             </div>
+
+            {/* Location */}
+            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">
+                        Località
+                    </label>
+                    <input
+                        id="location"
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleChange}
+                        placeholder="Es. Roma, IT"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="latitude" className="block text-gray-700 text-sm font-bold mb-2">
+                        Latitudine
+                    </label>
+                    <input
+                        id="latitude"
+                        type="number"
+                        step="0.000001"
+                        min="-90"
+                        max="90"
+                        name="latitude"
+                        value={formData.latitude}
+                        onChange={handleChange}
+                        placeholder="Es. 41.9028"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    {latError && <p className="text-red-500 text-xs mt-1">{latError}</p>}
+                </div>
+                <div>
+                    <label htmlFor="longitude" className="block text-gray-700 text-sm font-bold mb-2">
+                        Longitudine
+                    </label>
+                    <input
+                        id="longitude"
+                        type="number"
+                        step="0.000001"
+                        min="-180"
+                        max="180"
+                        name="longitude"
+                        value={formData.longitude}
+                        onChange={handleChange}
+                        placeholder="Es. 12.4964"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    {lonError && <p className="text-red-500 text-xs mt-1">{lonError}</p>}
+                </div>
+            </div>
+            {coordPairError && (
+                <p className="text-red-500 text-xs -mt-2 mb-4">{coordPairError}</p>
+            )}
+
 
             {/* Mood - menu a tendina */}
             <div className="mb-4">
