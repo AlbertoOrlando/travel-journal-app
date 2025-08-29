@@ -30,7 +30,19 @@ const RegisterPage = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: '' })); // Rimuove errore inline quando si scrive
+
+        // Validazione dinamica per password e pulizia altri errori inline
+        setErrors((prev) => {
+            const next = { ...prev };
+            if (name === 'password') {
+                if (!value) next.password = 'Password richiesta';
+                else if (value.length < 6) next.password = 'La password deve avere almeno 6 caratteri';
+                else next.password = '';
+            } else {
+                next[name] = '';
+            }
+            return next;
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -110,6 +122,7 @@ const RegisterPage = () => {
                             onChange={handleChange}
                             placeholder="Password"
                             autoComplete="new-password"
+                            minLength={6}
                             className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.password ? 'border-red-500' : ''
                                 }`}
                         />

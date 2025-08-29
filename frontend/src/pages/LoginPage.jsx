@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const LoginPage = () => {
     const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const { login } = useAuth();
@@ -13,11 +14,34 @@ const LoginPage = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // Validazione dinamica password e pulizia errori
+        setErrors((prev) => {
+            const next = { ...prev };
+            if (name === 'password') {
+                if (!value) next.password = 'Password richiesta';
+                else if (value.length < 6) next.password = 'La password deve avere almeno 6 caratteri';
+                else next.password = '';
+            } else {
+                next[name] = '';
+            }
+            return next;
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        // Validazione sincrona minima prima dell'invio
+        const localErrors = {};
+        if (!formData.identifier.trim()) localErrors.identifier = 'Email o username richiesti';
+        if (!formData.password) localErrors.password = 'Password richiesta';
+        else if (formData.password.length < 6) localErrors.password = 'La password deve avere almeno 6 caratteri';
+
+        if (Object.keys(localErrors).length > 0) {
+            setErrors(localErrors);
+            return;
+        }
         setLoading(true);
 
         try {
@@ -53,8 +77,9 @@ const LoginPage = () => {
                             placeholder="Email o Username"
                             autoComplete="username"
                             required
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.identifier ? 'border-red-500' : ''}`}
                         />
+                        {errors.identifier && <p className="text-red-500 text-xs mt-1">{errors.identifier}</p>}
                     </div>
                     <div className="mb-6">
                         <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
@@ -69,8 +94,10 @@ const LoginPage = () => {
                             placeholder="Password"
                             autoComplete="current-password"
                             required
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            minLength={6}
+                            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.password ? 'border-red-500' : ''}`}
                         />
+                        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                     </div>
                     {error && (
                         <div

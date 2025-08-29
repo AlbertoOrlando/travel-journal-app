@@ -22,6 +22,9 @@ const register = async (req, res) => {
     if (!username || !email || !password) {
         return res.status(400).json({ msg: 'Inserisci tutti i campi' });
     }
+    if (password.length < 6) {
+        return res.status(400).json({ msg: 'La password deve avere almeno 6 caratteri' });
+    }
 
     try {
         const salt = await bcrypt.genSalt(10);
@@ -72,6 +75,9 @@ const login = async (req, res) => {
 
     if (!loginId || !password) {
         return res.status(400).json({ msg: 'Inserisci email/username e password' });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ msg: 'La password deve avere almeno 6 caratteri' });
     }
 
     try {

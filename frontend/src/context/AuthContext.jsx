@@ -29,9 +29,9 @@ export const AuthProvider = ({ children }) => {
             setLoadingLogin(false);
             return { success: false, msg: 'Inserisci email o username' };
         }
-        if (!password || password.length < 4) {
+        if (!password || password.length < 6) {
             setLoadingLogin(false);
-            return { success: false, msg: 'Password troppo corta' };
+            return { success: false, msg: 'La password deve avere almeno 6 caratteri' };
         }
 
         try {
@@ -61,9 +61,9 @@ export const AuthProvider = ({ children }) => {
             setLoadingRegister(false);
             return { success: false, msg: 'Email non valida' };
         }
-        if (!password || password.length < 4) {
+        if (!password || password.length < 6) {
             setLoadingRegister(false);
-            return { success: false, msg: 'Password troppo corta' };
+            return { success: false, msg: 'La password deve avere almeno 6 caratteri' };
         }
 
         try {
