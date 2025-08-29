@@ -103,8 +103,8 @@ const PostDetailPage = () => {
                             <span className="font-semibold">Media:</span>
                             <div className="mt-2">
                                 {/\.(jpg|jpeg|png|gif|webp)$/i.test(post.media_url) ? (
-                                    <div className="w-full h-64 md:h-96 overflow-hidden rounded bg-gray-100">
-                                        <img src={post.media_url} alt="media" className="w-full h-full object-cover" />
+                                    <div className="w-full h-64 md:h-96 overflow-hidden rounded bg-gray-100 flex items-center justify-center">
+                                        <img src={post.media_url} alt="media" className="max-w-full max-h-full object-contain" />
                                     </div>
                                 ) : /\.(mp4|webm|ogg)$/i.test(post.media_url) ? (
                                     <video src={post.media_url} controls className="w-full rounded" />
