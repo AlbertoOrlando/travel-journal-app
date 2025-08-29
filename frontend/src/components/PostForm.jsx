@@ -61,7 +61,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
         setFormData((prev) => ({ ...prev, [name]: next }));
     };
 
-    // Validazione coordinate
+    // Validazione coordinate (ora obbligatorie: devono essere compilate dalla ricerca luogo)
     const validateCoords = () => {
         const latStr = formData.latitude;
         const lonStr = formData.longitude;
@@ -72,8 +72,9 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
         const hasLat = latStr !== '' && latStr !== null && latStr !== undefined;
         const hasLon = lonStr !== '' && lonStr !== null && lonStr !== undefined;
 
-        if (hasLat !== hasLon) {
-            setCoordPairError('Inserisci sia latitudine che longitudine, oppure lascia entrambi vuoti.');
+        // Ora richiediamo entrambe presenti (selezione luogo obbligatoria)
+        if (!hasLat || !hasLon) {
+            setCoordPairError('Seleziona un luogo per compilare latitudine e longitudine (obbligatorio).');
             return false;
         }
 
@@ -91,7 +92,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             }
             return ok;
         }
-        return true; // entrambi vuoti va bene
+        return true;
     };
 
     useEffect(() => {
@@ -157,7 +158,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             {/* Ricerca luoghi */}
             <div className="mb-6">
                 <label htmlFor="place_search" className="block text-gray-700 text-sm font-bold mb-2">
-                    Cerca luogo (auto-compila coordinate)
+                    Cerca luogo (obbligatorio)
                 </label>
                 <div className="flex gap-2">
                     <input
@@ -213,7 +214,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                 )}
             </div>
 
-            {/* Location */}
+            {/* Location e coordinate (sola lettura, compilate dalla ricerca) */}
             <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">
@@ -224,9 +225,10 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                         type="text"
                         name="location"
                         value={formData.location}
-                        onChange={handleChange}
-                        placeholder="Es. Roma, IT"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        readOnly
+                        disabled
+                        placeholder="Seleziona dalla ricerca"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed"
                     />
                 </div>
                 <div>
@@ -241,9 +243,10 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                         max="90"
                         name="latitude"
                         value={formData.latitude}
-                        onChange={handleChange}
-                        placeholder="Es. 41.9028"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        readOnly
+                        disabled
+                        placeholder="Compilato automaticamente"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed"
                     />
                     {latError && <p className="text-red-500 text-xs mt-1">{latError}</p>}
                 </div>
@@ -259,9 +262,10 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                         max="180"
                         name="longitude"
                         value={formData.longitude}
-                        onChange={handleChange}
-                        placeholder="Es. 12.4964"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        readOnly
+                        disabled
+                        placeholder="Compilato automaticamente"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed"
                     />
                     {lonError && <p className="text-red-500 text-xs mt-1">{lonError}</p>}
                 </div>
