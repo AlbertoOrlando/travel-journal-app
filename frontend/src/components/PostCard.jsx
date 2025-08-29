@@ -3,8 +3,18 @@ import { Link } from 'react-router-dom';
 const PostCard = ({ post }) => {
     const createdAt = post.created_at || post.createdAt;
     const preview = (post.description || post.content || '').toString();
+    const mediaUrl = post.media_url || '';
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(mediaUrl);
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300 cursor-pointer">
+            {/* Media thumbnail (se immagine) */}
+            {isImage && (
+                <Link to={`/post/${post.id}`} className="block">
+                    <div className="w-full h-48 bg-white overflow-hidden">
+                        <img src={mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                    </div>
+                </Link>
+            )}
             <div className="p-6">
                 <Link to={`/post/${post.id}`} className="block">
                     <h2 className="text-2xl font-bold text-gray-800 mb-2 hover:text-blue-600 transition-colors duration-200">
@@ -16,9 +26,11 @@ const PostCard = ({ post }) => {
                         Creato il {new Date(createdAt).toLocaleDateString()}
                     </p>
                 )}
-                <p className="text-gray-700 text-base mb-4 line-clamp-3">
-                    {preview}
-                </p>
+                {!isImage && (
+                    <p className="text-gray-700 text-base mb-4 line-clamp-3">
+                        {preview}
+                    </p>
+                )}
                 {Array.isArray(post.tags) && post.tags.length > 0 && (
                     <div className="mb-4 flex flex-wrap gap-2">
                         {post.tags.map((t) => (

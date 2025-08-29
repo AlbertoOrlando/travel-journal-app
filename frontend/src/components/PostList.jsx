@@ -126,15 +126,24 @@ const PostList = () => {
                         {filteredPosts.map(post => {
                             const createdAt = post.created_at || post.createdAt;
                             const preview = (post.description || post.content || '').toString();
+                            const mediaUrl = post.media_url || '';
+                            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(mediaUrl);
                             return (
                                 <a key={post.id} href={`#/post/${post.id}`} className="block p-4 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none">
-                                    <div className="flex items-start justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        {isImage && (
+                                            <div className="w-32 h-24 flex-shrink-0 bg-white overflow-hidden rounded">
+                                                <img src={mediaUrl} alt={post.title} className="w-full h-full object-contain" />
+                                            </div>
+                                        )}
                                         <div className="flex-1 min-w-0">
                                             <h3 className="text-lg font-semibold text-gray-800 truncate">{post.title}</h3>
                                             {createdAt && (
                                                 <p className="text-xs text-gray-500 mt-1">{new Date(createdAt).toLocaleDateString()}</p>
                                             )}
-                                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{preview}</p>
+                                            {!isImage && (
+                                                <p className="text-sm text-gray-700 mt-2 line-clamp-2">{preview}</p>
+                                            )}
                                             {Array.isArray(post.tags) && post.tags.length > 0 && (
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {post.tags.map((t) => (
