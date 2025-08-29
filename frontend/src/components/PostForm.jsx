@@ -147,29 +147,24 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                 </div>
             </div>
 
-            {/* Mood - selezione verticale */}
+            {/* Mood - menu a tendina */}
             <div className="mb-4">
-                <span className="block text-gray-700 text-sm font-bold mb-2">Umore</span>
-                <div className="flex flex-col gap-2" role="radiogroup" aria-label="Seleziona umore">
-                    {[
-                        'entusiasta',
-                        'bella esperienza',
-                        'normale',
-                        'così così',
-                        'delusione totale',
-                    ].map((opt) => (
-                        <label key={opt} className="inline-flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="mood"
-                                value={opt}
-                                checked={formData.mood === opt}
-                                onChange={handleChange}
-                            />
-                            <span className="capitalize">{opt}</span>
-                        </label>
-                    ))}
-                </div>
+                <label htmlFor="mood" className="block text-gray-700 text-sm font-bold mb-2">
+                    Umore
+                </label>
+                <select
+                    id="mood"
+                    name="mood"
+                    value={formData.mood}
+                    onChange={handleChange}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                    <option value="entusiasta">Entusiasta</option>
+                    <option value="bella esperienza">Bella esperienza</option>
+                    <option value="normale">Normale</option>
+                    <option value="così così">Così così</option>
+                    <option value="delusione totale">Delusione totale</option>
+                </select>
             </div>
 
             {/* Note positive/negative */}
