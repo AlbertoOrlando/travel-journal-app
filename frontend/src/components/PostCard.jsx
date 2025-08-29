@@ -7,14 +7,6 @@ const PostCard = ({ post }) => {
     const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(mediaUrl);
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform transform hover:scale-105 duration-300 cursor-pointer">
-            {/* Media thumbnail (se immagine) */}
-            {isImage && (
-                <Link to={`/post/${post.id}`} className="block">
-                    <div className="w-full h-48 bg-white overflow-hidden">
-                        <img src={mediaUrl} alt={post.title} className="w-full h-full object-cover" />
-                    </div>
-                </Link>
-            )}
             <div className="p-6">
                 <Link to={`/post/${post.id}`} className="block">
                     <h2 className="text-2xl font-bold text-gray-800 mb-2 hover:text-blue-600 transition-colors duration-200">
@@ -25,6 +17,14 @@ const PostCard = ({ post }) => {
                     <p className="text-gray-600 text-sm mb-4">
                         Creato il {new Date(createdAt).toLocaleDateString()}
                     </p>
+                )}
+                {/* Media thumbnail (se immagine) sotto titolo e data */}
+                {isImage && (
+                    <Link to={`/post/${post.id}`} className="block mb-4">
+                        <div className="w-full h-48 bg-white overflow-hidden rounded">
+                            <img src={mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                        </div>
+                    </Link>
                 )}
                 {!isImage && (
                     <p className="text-gray-700 text-base mb-4 line-clamp-3">
