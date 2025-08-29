@@ -20,6 +20,14 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
     const [mediaMethod, setMediaMethod] = useState(initialData.media_url ? 'url' : 'upload');
     const [mediaFile, setMediaFile] = useState(null);
 
+    // Validazione coordinate e ricerca luoghi
+    const [latError, setLatError] = useState('');
+    const [lonError, setLonError] = useState('');
+    const [coordPairError, setCoordPairError] = useState('');
+    const [placeQuery, setPlaceQuery] = useState('');
+    const [placeLoading, setPlaceLoading] = useState(false);
+    const [placeResults, setPlaceResults] = useState([]);
+
     // Aggiorna lo stato solo se initialData cambia realmente
     useEffect(() => {
         if (initialData && (initialData.title || initialData.description || initialData.content)) {
@@ -45,12 +53,59 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        // Normalizza decimali: virgola -> punto per lat/lon/costo
+        let next = value;
+        if (name === 'latitude' || name === 'longitude' || name === 'actual_cost') {
+            next = value.replace(',', '.');
+        }
+        setFormData((prev) => ({ ...prev, [name]: next }));
     };
+
+    // Validazione coordinate
+    const validateCoords = () => {
+        const latStr = formData.latitude;
+        const lonStr = formData.longitude;
+        setLatError('');
+        setLonError('');
+        setCoordPairError('');
+
+        const hasLat = latStr !== '' && latStr !== null && latStr !== undefined;
+        const hasLon = lonStr !== '' && lonStr !== null && lonStr !== undefined;
+
+        if (hasLat !== hasLon) {
+            setCoordPairError('Inserisci sia latitudine che longitudine, oppure lascia entrambi vuoti.');
+            return false;
+        }
+
+        if (hasLat && hasLon) {
+            const lat = parseFloat(latStr);
+            const lon = parseFloat(lonStr);
+            let ok = true;
+            if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+                setLatError('Latitudine deve essere tra -90 e 90');
+                ok = false;
+            }
+            if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+                setLonError('Longitudine deve essere tra -180 e 180');
+                ok = false;
+            }
+            return ok;
+        }
+        return true; // entrambi vuoti va bene
+    };
+
+    useEffect(() => {
+        validateCoords();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formData.latitude, formData.longitude]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const payload = { ...formData };
+        // Blocca invio se coordinate non valide
+        if (!validateCoords()) {
+            return;
+        }
         if (mediaMethod === 'upload') {
             // Invia il file al parent per creare un FormData
             payload.media_file = mediaFile || null;
@@ -122,13 +177,16 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     <input
                         id="latitude"
                         type="number"
-                        step="0.00000001"
+                        step="0.000001"
+                        min="-90"
+                        max="90"
                         name="latitude"
                         value={formData.latitude}
                         onChange={handleChange}
                         placeholder="Es. 41.9028"
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
+                    {latError && <p className="text-red-500 text-xs mt-1">{latError}</p>}
                 </div>
                 <div>
                     <label htmlFor="longitude" className="block text-gray-700 text-sm font-bold mb-2">
@@ -137,14 +195,79 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     <input
                         id="longitude"
                         type="number"
-                        step="0.00000001"
+                        step="0.000001"
+                        min="-180"
+                        max="180"
                         name="longitude"
                         value={formData.longitude}
                         onChange={handleChange}
                         placeholder="Es. 12.4964"
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     />
+                    {lonError && <p className="text-red-500 text-xs mt-1">{lonError}</p>}
                 </div>
+            </div>
+            {coordPairError && (
+                <p className="text-red-500 text-xs -mt-2 mb-4">{coordPairError}</p>
+            )}
+
+            {/* Ricerca luoghi */}
+            <div className="mb-6">
+                <label htmlFor="place_search" className="block text-gray-700 text-sm font-bold mb-2">
+                    Cerca luogo (auto-compila coordinate)
+                </label>
+                <div className="flex gap-2">
+                    <input
+                        id="place_search"
+                        type="text"
+                        value={placeQuery}
+                        onChange={(e) => setPlaceQuery(e.target.value)}
+                        placeholder="Es. Colosseo, Roma"
+                        className="flex-1 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                    <button
+                        type="button"
+                        disabled={placeLoading || !placeQuery.trim()}
+                        onClick={async () => {
+                            setPlaceLoading(true);
+                            setPlaceResults([]);
+                            try {
+                                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(placeQuery)}`;
+                                const res = await fetch(url, { headers: { 'Accept-Language': 'it' } });
+                                const data = await res.json();
+                                setPlaceResults(Array.isArray(data) ? data : []);
+                            } catch (err) {
+                                setPlaceResults([]);
+                            } finally {
+                                setPlaceLoading(false);
+                            }
+                        }}
+                        className={`px-4 py-2 rounded text-white ${placeLoading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    >
+                        {placeLoading ? 'Cerco…' : 'Cerca'}
+                    </button>
+                </div>
+                {placeResults.length > 0 && (
+                    <ul className="mt-3 border rounded divide-y max-h-60 overflow-auto bg-white">
+                        {placeResults.map((r) => (
+                            <li key={`${r.place_id}`} className="p-2 hover:bg-gray-50 cursor-pointer" onClick={() => {
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    location: r.display_name || prev.location,
+                                    latitude: r.lat ? String(r.lat) : prev.latitude,
+                                    longitude: r.lon ? String(r.lon) : prev.longitude,
+                                }));
+                                setLatError('');
+                                setLonError('');
+                                setCoordPairError('');
+                                setPlaceResults([]);
+                            }}>
+                                <div className="text-sm text-gray-800">{r.display_name}</div>
+                                <div className="text-xs text-gray-500">{r.lat}, {r.lon}</div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
 
             {/* Mood - menu a tendina */}
@@ -330,7 +453,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             <div className="flex items-center justify-between">
                 <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !!latError || !!lonError || !!coordPairError}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
                 >
                     {loading ? 'Operazione in corso...' : 'Salva Post'}
