@@ -1,52 +1,55 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PostCard from './PostCard';
 import Filters from './Filters';
 import api from '../api/api';
 
-const PostList = () => {
+const PostList = ({ posts: postsProp, filters: filtersProp, onFilter: onFilterProp }) => {
     const [posts, setPosts] = useState([]);
-    const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [filters, setFilters] = useState({ text: '', mood: '', tag: '', sort: 'date_desc' });
     const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
+    // Se il parent fornisce posts, non fare fetch
     useEffect(() => {
+        if (postsProp) {
+            setPosts(postsProp);
+            setLoading(false);
+            setError('');
+            return;
+        }
         const fetchPosts = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const result = await api.getPosts(token);
-                // L'API restituisce direttamente un array di post
                 const list = Array.isArray(result) ? result : [];
                 setPosts(list);
-                setFilteredPosts(list);
             } catch (err) {
                 setError(err.message || 'Errore nel caricamento dei post.');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchPosts();
-    }, []);
+    }, [postsProp]);
 
-    useEffect(() => {
+    const effectiveFilters = filtersProp || filters;
+
+    const filteredPosts = useMemo(() => {
         let result = posts.filter(post => {
             const title = (post.title || '').toLowerCase();
             const body = (post.description || post.content || '').toLowerCase();
-            const term = (filters.text || '').toLowerCase();
+            const term = (effectiveFilters.text || '').toLowerCase();
             const mood = (post.mood || '').toLowerCase();
-            const moodFilter = (filters.mood || '').toLowerCase();
+            const moodFilter = (effectiveFilters.mood || '').toLowerCase();
             const hasText = !term || title.includes(term) || body.includes(term);
-            // Con select predefinita meglio confronto esatto (case-insensitive)
             const hasMood = !moodFilter || mood === moodFilter;
-            const tagFilter = (filters.tag || '').toLowerCase();
+            const tagFilter = (effectiveFilters.tag || '').toLowerCase();
             const hasTag = !tagFilter || (Array.isArray(post.tags) && post.tags.some(t => t.toLowerCase().includes(tagFilter)));
             return hasText && hasMood && hasTag;
         });
 
-        // Sorting
-        switch (filters.sort) {
+        switch (effectiveFilters.sort) {
             case 'date_asc':
                 result = result.sort((a, b) => new Date(a.created_at || a.createdAt || 0) - new Date(b.created_at || b.createdAt || 0));
                 break;
@@ -60,11 +63,13 @@ const PostList = () => {
             default:
                 result = result.sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0));
         }
+        return result;
+    }, [posts, effectiveFilters]);
 
-        setFilteredPosts(result);
-    }, [filters, posts]);
-
-    const handleFilter = (f) => setFilters(f);
+    const handleFilter = (f) => {
+        if (onFilterProp) onFilterProp(f);
+        else setFilters(f);
+    };
 
     if (loading) {
         return (
@@ -89,7 +94,7 @@ const PostList = () => {
         <div className="container mx-auto px-4 sm:px-6 py-6">
             {/* Barra controlli: filtri + scelta vista */}
             <div className="mb-4">
-                <Filters onFilter={handleFilter} />
+                <Filters onFilter={handleFilter} values={effectiveFilters} />
                 <div className="flex items-center justify-end gap-2 mt-2">
                     <span className="text-sm text-gray-600">Vista:</span>
                     <button
