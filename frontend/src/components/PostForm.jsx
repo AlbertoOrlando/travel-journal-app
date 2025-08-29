@@ -24,6 +24,9 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
     const [latError, setLatError] = useState('');
     const [lonError, setLonError] = useState('');
     const [coordPairError, setCoordPairError] = useState('');
+    // Errori dinamici titolo/descrizione
+    const [titleError, setTitleError] = useState('');
+    const [descError, setDescError] = useState('');
     const [placeQuery, setPlaceQuery] = useState('');
     const [placeLoading, setPlaceLoading] = useState(false);
     const [placeResults, setPlaceResults] = useState([]);
@@ -59,6 +62,16 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             next = value.replace(',', '.');
         }
         setFormData((prev) => ({ ...prev, [name]: next }));
+
+        // Errori dinamici sui campi richiesti
+        if (name === 'title') {
+            if (!next.trim()) setTitleError('Titolo richiesto');
+            else setTitleError('');
+        }
+        if (name === 'description') {
+            if (!next.trim()) setDescError('Descrizione richiesta');
+            else setDescError('');
+        }
     };
 
     // Validazione coordinate (ora obbligatorie: devono essere compilate dalla ricerca luogo)
@@ -103,6 +116,17 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const payload = { ...formData };
+        // Verifica campi obbligatori titolo/descrizione
+        let valid = true;
+        if (!payload.title || !payload.title.trim()) {
+            setTitleError('Titolo richiesto');
+            valid = false;
+        }
+        if (!payload.description || !payload.description.trim()) {
+            setDescError('Descrizione richiesta');
+            valid = false;
+        }
+        if (!valid) return;
         // Blocca invio se coordinate non valide
         if (!validateCoords()) {
             return;
@@ -134,8 +158,9 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     onChange={handleChange}
                     placeholder="Inserisci il titolo del post"
                     required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${titleError ? 'border-red-500' : ''}`}
                 />
+                {titleError && <p className="text-red-500 text-xs mt-1">{titleError}</p>}
             </div>
 
             {/* Descrizione */}
@@ -151,8 +176,9 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
                     placeholder="Scrivi il tuo post qui..."
                     rows="10"
                     required
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+                    className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none ${descError ? 'border-red-500' : ''}`}
                 />
+                {descError && <p className="text-red-500 text-xs mt-1">{descError}</p>}
             </div>
 
             {/* Ricerca luoghi */}
@@ -458,7 +484,7 @@ const PostForm = ({ initialData = {}, onSubmit, loading, error }) => {
             <div className="flex items-center justify-between">
                 <button
                     type="submit"
-                    disabled={loading || !!latError || !!lonError || !!coordPairError}
+                    disabled={loading || !!latError || !!lonError || !!coordPairError || !!titleError || !!descError}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
                 >
                     {loading ? 'Operazione in corso...' : 'Salva Post'}
